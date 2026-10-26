@@ -1,0 +1,20 @@
+[
+  {
+    "title": "The Witcher 3: Wild Hunt",
+    "developer": "CD Projekt Red",
+    "year_released": 2015,
+    "genre": "RPG, Action Adventure"
+  },
+  {
+    "title": "Cyberpunk 2077",
+    "developer": "CD Projekt Red",
+    "year_released": 2020,
+    "genre": "RPG, Action, Open World"
+  },
+  {
+    "title": "The Elder Scrolls V: Skyrim",
+    "developer": "Bethesda Game Studios",
+    "year_released": 2011,
+    "genre": "RPG, Open World"
+  }
+]

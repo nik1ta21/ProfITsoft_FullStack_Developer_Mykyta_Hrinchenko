@@ -1,0 +1,20 @@
+[
+  {
+    "title": "Minecraft",
+    "developer": "Mojang Studios",
+    "year_released": 2011,
+    "genre": "Sandbox, Survival"
+  },
+  {
+    "title": "Terraria",
+    "developer": "Re-Logic",
+    "year_released": 2011,
+    "genre": "Sandbox, Action, Adventure"
+  },
+  {
+    "title": "Stardew Valley",
+    "developer": "ConcernedApe",
+    "year_released": 2016,
+    "genre": "Simulation, RPG"
+  }
+]
