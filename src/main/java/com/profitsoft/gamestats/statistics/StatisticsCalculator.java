@@ -1,39 +1,56 @@
 package com.profitsoft.gamestats.statistics;
 
 import com.profitsoft.gamestats.model.Game;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+/**
+ * Accumulates value counters for one attribute. Games are added one by one,
+ * so they never have to be kept in memory. Not thread-safe: use one instance per thread
+ * and combine them with {@link #merge(StatisticsCalculator)}.
+ */
 public class StatisticsCalculator {
 
-    public List<StatisticItem> calculateStatistics(List<Game> games, String attributeName) {
-        Map<String, Integer> counts = new HashMap<>();
-        
-        for (Game game : games) {
-            List<String> values = getAttributeValues(game, attributeName);
-            for (String value : values) {
-                counts.merge(value, 1, Integer::sum);
-            }
-        }
-        
-        List<StatisticItem> items = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : counts.entrySet()) {
-            items.add(new StatisticItem(entry.getKey(), entry.getValue()));
-        }
-        
-        items.sort(Comparator.comparingInt(StatisticItem::getCount).reversed());
-        return items;
-    }
+  private static final Comparator<StatisticItem> BY_COUNT_DESC_THEN_VALUE =
+      Comparator.comparingInt(StatisticItem::count).reversed()
+          .thenComparing(StatisticItem::value);
 
-    private List<String> getAttributeValues(Game game, String attributeName) {
-        return switch (attributeName) {
-            case "developer" -> List.of(game.getDeveloper());
-            case "year_released" -> List.of(String.valueOf(game.getYearReleased()));
-            case "genre" -> game.getGenres() != null ? game.getGenres() : List.of();
-            default -> throw new IllegalArgumentException("Unknown attribute: " + attributeName);
-        };
+  private final StatisticAttribute attribute;
+  private final Map<String, Integer> counts = new HashMap<>();
+  private int gamesProcessed;
+
+  public StatisticsCalculator(StatisticAttribute attribute) {
+    this.attribute = Objects.requireNonNull(attribute, "attribute");
+  }
+
+  public void add(Game game) {
+    gamesProcessed++;
+    for (String value : attribute.valuesOf(game)) {
+      counts.merge(value, 1, Integer::sum);
     }
+  }
+
+  public void merge(StatisticsCalculator other) {
+    if (other.attribute != attribute) {
+      throw new IllegalArgumentException(
+          "Cannot merge statistics by " + other.attribute + " into statistics by " + attribute);
+    }
+    other.counts.forEach((value, count) -> counts.merge(value, count, Integer::sum));
+    gamesProcessed += other.gamesProcessed;
+  }
+
+  public int getGamesProcessed() {
+    return gamesProcessed;
+  }
+
+  /** Items sorted by count (descending); items with equal count are sorted by value. */
+  public List<StatisticItem> getSortedStatistics() {
+    return counts.entrySet().stream()
+        .map(entry -> new StatisticItem(entry.getKey(), entry.getValue()))
+        .sorted(BY_COUNT_DESC_THEN_VALUE)
+        .toList();
+  }
 }

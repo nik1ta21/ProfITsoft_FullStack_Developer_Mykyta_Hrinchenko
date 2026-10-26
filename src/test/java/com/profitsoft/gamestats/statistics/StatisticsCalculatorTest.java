@@ -1,101 +1,145 @@
 package com.profitsoft.gamestats.statistics;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.profitsoft.gamestats.model.Developer;
 import com.profitsoft.gamestats.model.Game;
-import org.junit.jupiter.api.Test;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class StatisticsCalculatorTest {
 
-    @Test
-    void testCalculateDeveloperStatistics() {
-        List<Game> games = List.of(
-            new Game("Game1", "Developer1", 2000, List.of("Genre1")),
-            new Game("Game2", "Developer1", 2001, List.of("Genre2")),
-            new Game("Game3", "Developer2", 2002, List.of("Genre1"))
-        );
-        
-        StatisticsCalculator calculator = new StatisticsCalculator();
-        List<StatisticItem> stats = calculator.calculateStatistics(games, "developer");
-        
-        assertEquals(2, stats.size());
-        assertEquals("Developer1", stats.get(0).getValue());
-        assertEquals(2, stats.get(0).getCount());
-        assertEquals("Developer2", stats.get(1).getValue());
-        assertEquals(1, stats.get(1).getCount());
-    }
+  @Test
+  void countsGamesByDeveloper() {
+    // given
+    StatisticsCalculator calculator = calculatorWith(StatisticAttribute.DEVELOPER,
+        game("D1", 2000, "RPG"), game("D1", 2001, "RPG"), game("D2", 2002, "RPG"));
 
-    @Test
-    void testCalculateYearStatistics() {
-        List<Game> games = List.of(
-            new Game("Game1", "Developer1", 2000, List.of("Genre1")),
-            new Game("Game2", "Developer2", 2000, List.of("Genre2")),
-            new Game("Game3", "Developer3", 2001, List.of("Genre1"))
-        );
-        
-        StatisticsCalculator calculator = new StatisticsCalculator();
-        List<StatisticItem> stats = calculator.calculateStatistics(games, "year_released");
-        
-        assertEquals(2, stats.size());
-        assertEquals("2000", stats.get(0).getValue());
-        assertEquals(2, stats.get(0).getCount());
-        assertEquals("2001", stats.get(1).getValue());
-        assertEquals(1, stats.get(1).getCount());
-    }
+    // when
+    List<StatisticItem> statistics = calculator.getSortedStatistics();
 
-    @Test
-    void testCalculateGenreStatistics() {
-        List<Game> games = List.of(
-            new Game("Game1", "Developer1", 2000, List.of("RPG", "Action")),
-            new Game("Game2", "Developer2", 2001, List.of("RPG", "Adventure")),
-            new Game("Game3", "Developer3", 2002, List.of("Strategy"))
-        );
-        
-        StatisticsCalculator calculator = new StatisticsCalculator();
-        List<StatisticItem> stats = calculator.calculateStatistics(games, "genre");
-        
-        assertEquals(4, stats.size());
-        assertEquals("RPG", stats.get(0).getValue());
-        assertEquals(2, stats.get(0).getCount());
-    }
+    // then
+    assertEquals(List.of(new StatisticItem("D1", 2), new StatisticItem("D2", 1)), statistics);
+  }
 
-    @Test
-    void testCalculateStatisticsWithEmptyList() {
-        List<Game> games = List.of();
-        
-        StatisticsCalculator calculator = new StatisticsCalculator();
-        List<StatisticItem> stats = calculator.calculateStatistics(games, "developer");
-        
-        assertTrue(stats.isEmpty());
-    }
+  @Test
+  void countsGamesByYear() {
+    // given
+    StatisticsCalculator calculator = calculatorWith(StatisticAttribute.YEAR_RELEASED,
+        game("D1", 2000, "RPG"), game("D2", 2000, "RPG"), game("D3", 2001, "RPG"));
 
-    @Test
-    void testCalculateStatisticsWithInvalidAttribute() {
-        List<Game> games = List.of(
-            new Game("Game1", "Developer1", 2000, List.of("Genre1"))
-        );
-        
-        StatisticsCalculator calculator = new StatisticsCalculator();
-        
-        assertThrows(IllegalArgumentException.class, () -> {
-            calculator.calculateStatistics(games, "invalid");
-        });
-    }
+    // when
+    List<StatisticItem> statistics = calculator.getSortedStatistics();
 
-    @Test
-    void testStatisticsSortedByCount() {
-        List<Game> games = List.of(
-            new Game("Game1", "Developer1", 2000, List.of("Genre1")),
-            new Game("Game2", "Developer2", 2000, List.of("Genre2")),
-            new Game("Game3", "Developer3", 2000, List.of("Genre3")),
-            new Game("Game4", "Developer1", 2000, List.of("Genre1"))
-        );
-        
-        StatisticsCalculator calculator = new StatisticsCalculator();
-        List<StatisticItem> stats = calculator.calculateStatistics(games, "developer");
-        
-        assertEquals(3, stats.size());
-        assertTrue(stats.get(0).getCount() >= stats.get(1).getCount());
-        assertTrue(stats.get(1).getCount() >= stats.get(2).getCount());
+    // then
+    assertEquals(List.of(new StatisticItem("2000", 2), new StatisticItem("2001", 1)), statistics);
+  }
+
+  @Test
+  void countsEveryGenreOfGameSeparately() {
+    // given
+    StatisticsCalculator calculator = calculatorWith(StatisticAttribute.GENRE,
+        game("D1", 2000, "RPG", "Action"), game("D2", 2001, "RPG", "Adventure"),
+        game("D3", 2002, "Strategy"));
+
+    // when
+    List<StatisticItem> statistics = calculator.getSortedStatistics();
+
+    // then
+    assertEquals(List.of(new StatisticItem("RPG", 2), new StatisticItem("Action", 1),
+        new StatisticItem("Adventure", 1), new StatisticItem("Strategy", 1)), statistics);
+  }
+
+  @Test
+  void sortsByCountDescending() {
+    // given
+    StatisticsCalculator calculator = calculatorWith(StatisticAttribute.DEVELOPER,
+        game("A", 2000, "RPG"), game("B", 2000, "RPG"), game("B", 2000, "RPG"),
+        game("C", 2000, "RPG"), game("C", 2000, "RPG"), game("C", 2000, "RPG"));
+
+    // when
+    List<StatisticItem> statistics = calculator.getSortedStatistics();
+
+    // then
+    assertEquals(List.of("C", "B", "A"), statistics.stream().map(StatisticItem::value).toList());
+  }
+
+  @Test
+  void sortsItemsWithEqualCountByValue() {
+    // given
+    StatisticsCalculator calculator = calculatorWith(StatisticAttribute.DEVELOPER,
+        game("Zeta", 2000, "RPG"), game("Alpha", 2000, "RPG"), game("Mid", 2000, "RPG"));
+
+    // when
+    List<StatisticItem> statistics = calculator.getSortedStatistics();
+
+    // then
+    assertEquals(List.of("Alpha", "Mid", "Zeta"),
+        statistics.stream().map(StatisticItem::value).toList());
+  }
+
+  @Test
+  void returnsEmptyStatisticsWhenNoGamesAdded() {
+    // given
+    StatisticsCalculator calculator = new StatisticsCalculator(StatisticAttribute.GENRE);
+
+    // when / then
+    assertTrue(calculator.getSortedStatistics().isEmpty());
+    assertEquals(0, calculator.getGamesProcessed());
+  }
+
+  @Test
+  void ignoresMissingValuesButStillCountsGame() {
+    // given
+    StatisticsCalculator calculator = calculatorWith(StatisticAttribute.DEVELOPER,
+        new Game("No developer", null, null, List.of()), game("D1", 2000, "RPG"));
+
+    // when
+    List<StatisticItem> statistics = calculator.getSortedStatistics();
+
+    // then
+    assertEquals(List.of(new StatisticItem("D1", 1)), statistics);
+    assertEquals(2, calculator.getGamesProcessed());
+  }
+
+  @Test
+  void mergeSumsCountsOfBothCalculators() {
+    // given
+    StatisticsCalculator first = calculatorWith(StatisticAttribute.GENRE,
+        game("D1", 2000, "RPG", "Action"));
+    StatisticsCalculator second = calculatorWith(StatisticAttribute.GENRE,
+        game("D2", 2001, "RPG"), game("D3", 2002, "Puzzle"));
+
+    // when
+    first.merge(second);
+
+    // then
+    assertEquals(List.of(new StatisticItem("RPG", 2), new StatisticItem("Action", 1),
+        new StatisticItem("Puzzle", 1)), first.getSortedStatistics());
+    assertEquals(3, first.getGamesProcessed());
+  }
+
+  @Test
+  void mergeRejectsCalculatorOfAnotherAttribute() {
+    // given
+    StatisticsCalculator byGenre = new StatisticsCalculator(StatisticAttribute.GENRE);
+    StatisticsCalculator byDeveloper = new StatisticsCalculator(StatisticAttribute.DEVELOPER);
+
+    // when / then
+    assertThrows(IllegalArgumentException.class, () -> byGenre.merge(byDeveloper));
+  }
+
+  private static StatisticsCalculator calculatorWith(StatisticAttribute attribute, Game... games) {
+    StatisticsCalculator calculator = new StatisticsCalculator(attribute);
+    for (Game game : games) {
+      calculator.add(game);
     }
+    return calculator;
+  }
+
+  private static Game game(String developer, int year, String... genres) {
+    return new Game("Title", new Developer(developer), year, List.of(genres));
+  }
 }
