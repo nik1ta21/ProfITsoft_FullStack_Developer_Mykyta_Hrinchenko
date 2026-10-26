@@ -7,11 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Accumulates value counters for one attribute. Games are added one by one,
- * so they never have to be kept in memory. Not thread-safe: use one instance per thread
- * and combine them with {@link #merge(StatisticsCalculator)}.
- */
 public class StatisticsCalculator {
 
   private static final Comparator<StatisticItem> BY_COUNT_DESC_THEN_VALUE =
@@ -46,7 +41,6 @@ public class StatisticsCalculator {
     return gamesProcessed;
   }
 
-  /** Items sorted by count (descending); items with equal count are sorted by value. */
   public List<StatisticItem> getSortedStatistics() {
     return counts.entrySet().stream()
         .map(entry -> new StatisticItem(entry.getKey(), entry.getValue()))

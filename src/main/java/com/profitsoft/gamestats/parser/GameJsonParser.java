@@ -13,10 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * Streaming parser of a JSON file with an array of games. Games are passed to the consumer
- * one at a time, so memory usage does not depend on the file size. Stateless and thread-safe.
- */
 public class GameJsonParser {
 
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
@@ -56,7 +52,6 @@ public class GameJsonParser {
     return new Game(title, developer, yearReleased, genres);
   }
 
-  /** Returns the string value, or null for any other kind of value (null, number, object...). */
   private String readText(JsonParser parser) throws IOException {
     if (parser.currentToken() == JsonToken.VALUE_STRING) {
       return parser.getText();

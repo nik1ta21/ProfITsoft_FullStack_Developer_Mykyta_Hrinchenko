@@ -6,10 +6,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * Game attributes that statistics can be calculated by.
- * Each attribute knows its name from the command line and how to extract its values from a game.
- */
 public enum StatisticAttribute {
   DEVELOPER("developer",
       game -> game.developer() == null ? List.of() : List.of(game.developer().name())),

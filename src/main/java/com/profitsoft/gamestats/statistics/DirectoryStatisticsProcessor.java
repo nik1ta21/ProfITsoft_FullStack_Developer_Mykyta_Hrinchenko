@@ -13,10 +13,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-/**
- * Calculates statistics for all JSON files of a directory. Every file is parsed in a separate
- * task of a fixed thread pool; each task has its own calculator, results are merged at the end.
- */
 public class DirectoryStatisticsProcessor {
 
   private final GameJsonParser parser = new GameJsonParser();

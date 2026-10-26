@@ -6,11 +6,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.stream.LongStream;
 
-/**
- * Measures total processing time for 1, 2, 4 and 8 threads and prints a Markdown table.
- * Usage: ThreadBenchmark &lt;directory&gt; &lt;attribute&gt; [runs]
- * For every thread count one warm-up run is made first and is not included in the results.
- */
 public class ThreadBenchmark {
 
   private static final int[] THREAD_COUNTS = {1, 2, 4, 8};

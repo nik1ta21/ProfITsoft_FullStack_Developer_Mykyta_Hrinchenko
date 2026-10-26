@@ -8,10 +8,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Random;
 
-/**
- * Generates large JSON files with random games for the thread-count experiment.
- * Usage: DataGenerator &lt;outputDir&gt; &lt;fileCount&gt; &lt;gamesPerFile&gt;
- */
 public class DataGenerator {
 
   private static final List<String> GENRES = List.of(
