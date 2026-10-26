@@ -81,9 +81,17 @@ public class GameStatisticsApplication {
     }
 
     private static void printUsage() {
-        System.out.println("Usage: java GameStatisticsApplication <directory> <attribute> [threadCount]");
-        System.out.println("  directory   - Path to folder containing JSON files");
-        System.out.println("  attribute   - Attribute to calculate statistics (developer, year_released, genre)");
-        System.out.println("  threadCount - Number of threads for parallel parsing (optional, default: 1)");
+        System.err.println("""
+        Usage:
+          mvn exec:java "-Dexec.args=<directory> <attribute> [threadCount]"
+
+        Arguments:
+          <directory>   Path to the folder containing input JSON files (required)
+          <attribute>   Target attribute for statistics: developer | year_released | genre (required)
+          [threadCount] Number of worker threads for parallel parsing (optional, default: 1)
+
+        Example:
+          mvn exec:java "-Dexec.args=src/main/resources/sample-data genre 4"
+        """);
     }
 }
